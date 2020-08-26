@@ -4,7 +4,7 @@ import math
 import time
 
 pygame.init()
-WIDTH, HEIGHT = 800, 500
+WIDTH, HEIGHT = 800, 600
 win = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Whack a Mole")
 clock = pygame.time.Clock()
@@ -15,6 +15,13 @@ GAP = 15
 letters = []
 start_x = round((WIDTH - (RADIUS * 2 + GAP) * 13) / 2)
 start_y = 400
+
+# images
+bg_start = pygame.image.load('bg_start.jpg').convert_alpha()
+bg_game_ = pygame.image.load('bg_game.jpg').convert_alpha()
+mole = pygame.image.load('mole.png')
+bg_game = pygame.transform.scale(bg_game_, (WIDTH, HEIGHT))
+
 
 # fonts
 TITLE_FONT = pygame.font.SysFont('googleFont.ttf', 100)
@@ -53,8 +60,8 @@ class Button:
                             int(self.y + (self.height / 2 - text.get_height() / 2))))
 
     def isOver(self, pos):
-        if pos[0] > self.x and pos[0] < self.x + self.width:
-            if pos[1] > self.y and pos[1] < self.y + self.height:
+        if self.x < pos[0] < self.x + self.width:
+            if self.y < pos[1] < self.y + self.height:
                 return True
         return False
 
@@ -73,7 +80,7 @@ def start_meny():
     while run:
 
         # set Background white
-        win.fill(WHITE)
+        win.blit(bg_start, (0,0))
 
         # make buttons to start game
         start_green_button.draw(win, BLACK)
@@ -127,20 +134,25 @@ class Circle:
         self.x = x
         self.y = y
         self.radius = radius
+        self.img = pygame.transform.scale(mole, (radius*2, radius*2))
 
     def start(self):
-        pygame.draw.circle(win, self.color, (self.x, self.y), self.radius)
+        #pygame.draw.circle(win, self.color, (self.x, self.y), self.radius)
+        win.blit(self.img, (self.x, self.y))
 
     def update(self, x_updated, y_updated):
-        pygame.draw.circle(win, BLACK, (x_updated, y_updated), self.radius)
+        #pygame.draw.circle(win, BLACK, (x_updated, y_updated), self.radius)
+        win.blit(self.img, (x_updated, y_updated))
 
     def isOver(self, pos):
-        if self.radius > math.sqrt((self.x - pos[0])**2 + (self.y - pos[1])**2):
-            return True
+        #if self.radius > math.sqrt((self.x - pos[0])**2 + (self.y - pos[1])**2):
+        if self.x < pos[0] < self.x + self.radius*2:
+            if self.y < pos[1] < self.y + self.radius*2:
+                return True
         return False
 
 
-game_circle = Circle(RED, 400, 250, 30)
+game_circle = Circle(RED, 400, 250, 40)
 
 time_limit = 10
 
@@ -155,7 +167,7 @@ def game():
     while run:
 
         # Background color
-        win.fill(LIGHT_GRAY)
+        win.blit(bg_game, (0,0))
 
         for event in pygame.event.get():
             pos = pygame.mouse.get_pos()
@@ -195,7 +207,7 @@ def game():
 def game_over():
     print('Game Over')
     while True:
-        win.fill(WHITE)
+        win.blit(bg_start, (0, 0))
 
         try_again_button.draw(win, BLACK)
 
@@ -211,7 +223,7 @@ def game_over():
                 if try_again_button.isOver(pos):
                     try_again_button.color = GREY
                 else:
-                    try_again_button.color = RED
+                    try_again_button.color = GREEN
 
         # Game over text
         text = TITLE_FONT.render('Game Over', 1, BLACK)
