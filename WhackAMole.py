@@ -1,6 +1,7 @@
 import pygame
 import random
 import math
+import time
 
 pygame.init()
 WIDTH, HEIGHT = 800, 500
@@ -8,7 +9,7 @@ win = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Whack a Mole")
 clock = pygame.time.Clock()
 
-# button vriables
+# button varibles
 RADIUS = 20
 GAP = 15
 letters = []
@@ -61,7 +62,7 @@ class Button:
 # buttons
 start_green_button = Button(GREEN, int(WIDTH * 0.2), int(HEIGHT * 0.8), 100, 80, 'Start')
 start_red_button = Button(RED, int(WIDTH * 0.7), int(HEIGHT * 0.8), 100, 80, 'Exit')
-try_again_button = Button(RED, int(WIDTH / 2 - 60), int(HEIGHT * 0.8), 120, 80, 'Quit')
+try_again_button = Button(GREEN, int(WIDTH / 2 - 60), int(HEIGHT * 0.8), 140, 80, 'Try Again')
 
 
 # start meny
@@ -141,12 +142,14 @@ class Circle:
 
 game_circle = Circle(RED, 400, 250, 30)
 
+time_limit = 10
+
 
 def game():
     print('Game')
-    timer = 0
-
+    start_time = time.time()
     global counter
+    counter = 0
     global game_circle
     run = True
     while run:
@@ -165,18 +168,24 @@ def game():
                 else:
                     game_circle.color = RED
             if event.type == pygame.MOUSEBUTTONDOWN:
-                print(pos)
                 if game_circle.isOver(pos):
-                    counter = counter + 1
+                    counter += 1
                     game_circle = Circle(RED, random.randint(100, 700), random.randint(100, 400), 30)
+                else:
+                    counter -= 1
 
-        # Timer
-        timer = pygame.time.get_ticks()
-        text = SMAL_FONT.render(f'Timer: {timer}', 1, BLACK)
-        win.blit(text, (int(WIDTH * 0.75), int(HEIGHT * 0.1)))
-        if timer > 10000:
+        elapsed_time = time.time() - start_time
+
+        if elapsed_time > 10:
             game_over()
 
+        text = SMAL_FONT.render(f'sekunder: {int(time_limit - elapsed_time)}', 1, BLACK)
+        win.blit(text, (WIDTH * 0.75, HEIGHT * 0.1))
+
+
+        # display counter
+        text_counter = SMAL_FONT.render(f'Score: {counter}', 1, BLACK)
+        win.blit(text_counter, (WIDTH * 0.1, HEIGHT * 0.1))
         game_circle.start()
 
         pygame.display.update()
@@ -197,8 +206,7 @@ def game_over():
                 quit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if try_again_button.isOver(pos):
-                    pygame.quit()
-                    quit()
+                    game()
             if event.type == pygame.MOUSEMOTION:
                 if try_again_button.isOver(pos):
                     try_again_button.color = GREY
@@ -217,11 +225,11 @@ def game_over():
         height = round(HEIGHT * 0.3)
         win.blit(text, (width, height))
 
+
         pygame.display.update()
         clock.tick(15)
 
 
 start_meny()
-print('Ute av lupen')
 game()
 pygame.quit()
